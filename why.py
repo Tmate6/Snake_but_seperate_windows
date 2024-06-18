@@ -6,6 +6,11 @@ import threading
 import time
 import random
 
+SPEED = 0.9
+LEN = 1
+DIE = True
+FADE = 5
+
 screenWidth, screenHeight = pyautogui.size()
 cellSize = screenHeight//10
 
@@ -34,7 +39,7 @@ class BodyPart:
         if self.bg == 'yellow':
             self.root.configure(bg='#0000FF')
         else:
-            self.bg -= 5
+            self.bg -= FADE
             self.root.configure(bg=f'#0000{hex(self.bg)[2:].upper()}')
 
     def die(self):
@@ -61,8 +66,8 @@ class Snake:
 
         self.listener.start()
 
-        self.len = 1
-        self.speed = 0.9
+        self.len = LEN
+        self.speed = SPEED
 
         self.x = cellSize
         self.y = cellSize
@@ -127,8 +132,9 @@ class Snake:
                 pass
             
             try:
-                for bodyPart in self.body:
-                    bodyPart.age()
+                for i, bodyPart in enumerate(self.body):
+                    if i < 500/FADE:
+                        bodyPart.age()
             except:
                 pass
 
@@ -151,19 +157,20 @@ class Snake:
 
             self.lastDir = self.dir
 
-            for part in self.body[1:]:
-                if self.x == part.x and self.y == part.y:
-                    self.live = False
+            if DIE:
+                for part in self.body[1:]:
+                    if self.x == part.x and self.y == part.y:
+                        self.live = False
 
-                    self.root.geometry(f'{100}x{100}+{screenWidth//2-50}+{screenHeight//2-50}')
-                    self.root.configure(bg='black')
-                    self.root.attributes('-alpha', 0.8)
-                    self.root.attributes('-topmost', True)
+                        self.root.geometry(f'{100}x{100}+{screenWidth//2-50}+{screenHeight//2-50}')
+                        self.root.configure(bg='black')
+                        self.root.attributes('-alpha', 0.8)
+                        self.root.attributes('-topmost', True)
 
-                    text = tk.Label(self.root, text=f'You died :(\nScore:\n{self.len}', font=('Helvetica', 20), bg='black', fg='white')
-                    text.pack()
+                        text = tk.Label(self.root, text=f'You died :(\nScore:\n{self.len}', font=('Helvetica', 20), bg='black', fg='white')
+                        text.pack()
 
-                    break
+                        break
 
             if self.x < 0:
                 self.x = round(screenWidth//cellSize)*cellSize
